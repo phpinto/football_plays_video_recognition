@@ -5,13 +5,11 @@ import cv2
 import math
 from PIL import Image as img
 import numpy as np
-import matplotlib.pyplot as plt
-import tensorflow as tf
 from tensorflow import keras
-from keras.applications.vgg16 import VGG16
 from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import sequence
 from keras.models import Model
+import time
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'static', 'upload')
@@ -23,8 +21,25 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
+model = keras.models.load_model(os.path.join(MODEL_FOLDER, CNN_MODEL_FILENAME))
+resnet_model = ResNet50(weights='imagenet')
+resnet_extractor = Model(inputs=resnet_model.input,
+						 outputs=resnet_model.get_layer('avg_pool').output)
 
-# if not os.path.exists(os.path.join(MODEL_FOLDER, RESNET50_MODEL_FILENAME)):
+Time = 0
+
+
+def start_time():
+	global Time
+	Time = time.time()
+
+
+def stop_time():
+	return time.time() - Time
+
+
+def reset_time():
+	Time = 0
 
 @app.route('/')
 def upload_file():
@@ -32,8 +47,8 @@ def upload_file():
 	
 @app.route('/uploader', methods = ['GET', 'POST'])
 def upload_files():
-	predict = [0] * 6
-	class_properties = [""] * 6
+	predict = [0] * 5
+	class_properties = [""] * 5
 	video_filename = ""
 	if request.method == 'POST':
 		f = request.files['file']
@@ -50,6 +65,8 @@ def upload_files():
 
 
 def preprocess_data(filename):
+
+	start_time()
 	images = [[]]
 	#generating frames using opencv
 	video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -81,38 +98,18 @@ def preprocess_data(filename):
 		# 	plt.figure()
 		# 	plt.imshow(images[0][i])
 		# 	plt.show()
+	print("\nPreProcessing time:", stop_time())
 	return images
 
 
 def get_prediction(images):
-	# vgg16_cnn_images = []
-	model = keras.models.load_model(os.path.join(MODEL_FOLDER, CNN_MODEL_FILENAME))
-	# print(os.path.join(MODEL_FOLDER, RESNET50_MODEL_FILENAME))
-	# resnet_model = keras.models.load_model(os.path.join(MODEL_FOLDER, RESNET50_MODEL_FILENAME))
-	# vgg16_model = VGG16(weights='imagenet')
-	# vgg16_extractor = Model(inputs=vgg16_model.input, outputs=vgg16_model.get_layer('fc2').output)
-	# vgg16_cnn_images.append(vgg16_extractor.predict(images[0]))
-	# vgg16_cnn_images = np.asarray(vgg16_cnn_images)
-	# print(model.summary())
-	# print(vgg16_cnn_images.shape)
-	#
-	# input = sequence.pad_sequences(vgg16_cnn_images, maxlen=15)
-	# print("Vinh", input.shape)
-	# predict = model.predict(input)
-	# print(predict)
-	# predict = [0.12, 0.23, 0.34, 0.45, 0.51, 0.62]
-	# return [int(p*100) for p in predict]
-	resnet_cnn_images = []
-	resnet_model = ResNet50(weights='imagenet')
-	resnet_extractor = Model(inputs=resnet_model.input,
-							 outputs=resnet_model.get_layer('avg_pool').output)
-	resnet_cnn_images.append(resnet_extractor.predict(images[0]))
+	start_time()
+	resnet_cnn_images = [resnet_extractor.predict(images[0])]
 	resnet_cnn_images = np.asarray(resnet_cnn_images)
 	input = sequence.pad_sequences(resnet_cnn_images, maxlen=30)
 	predict = model.predict(input[0:1])
 	s = np.sum(predict)
-	print(s)
-	print(predict)
+	print("\n Getting prediction time:", stop_time())
 	return [round(p*100/s, 1) for p in predict[0]]
 
 @app.after_request
