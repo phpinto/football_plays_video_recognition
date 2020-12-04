@@ -1,7 +1,7 @@
 # Automatic Classification of American Football Plays
 
 
-<img src="./website/static/photo/Team.png" width="70%">
+<img src="./website/static/photo/Team.png" width="80%">
 
 ## Introduction
 In this project, we develop a computer vision model to classify videos of 
