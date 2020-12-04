@@ -25,7 +25,8 @@ Project Prototype is deployed on http://54.221.66.111:5000/
 pip install website/requirements.txt
 ```
 ## Running server on local host:
-
 ```console
-flask run --host=localhost --port=5000
+cd website
+export FLASK_APP=app.py
+flask run
 ```
