@@ -20,7 +20,7 @@ Project Prototype is deployed on http://54.221.66.111:5000/
 
 ## Installations:
 * Python 3.8.3 is required
-* After install Python 3.8.3, run
+* After installing Python 3.8.3, run
 ```console
 pip install website/requirements.txt
 ```
