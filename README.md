@@ -30,3 +30,9 @@ cd website
 export FLASK_APP=app.py
 flask run
 ```
+
+## Initial Research Stages:
+To access the Jupyter notebooks containing our initial research work to develop our classification models, run the following command and access the notebooks located in the "jupyter_notebooks" directory.
+```console
+jupyter notebook
+```
